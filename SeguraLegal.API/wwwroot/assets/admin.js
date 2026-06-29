@@ -5,12 +5,12 @@ document.addEventListener("DOMContentLoaded", () => {
     bindAuth();
     bindEditing();
     bindActions();
+    bindBotTester();
 
     const token = localStorage.getItem(tokenKey);
     if (token) {
         openDashboard();
     } else {
-        // Aseguramos que la pantalla de inicio siempre tape el dashboard si no hay token
         document.getElementById("dashboard").classList.remove("visible");
         document.getElementById("loginPanel").style.display = "block";
     }
@@ -85,8 +85,12 @@ function bindEditing() {
             const array = getByPath(state, target.dataset.array);
             const index = Number(target.dataset.index);
             if (!Array.isArray(array) || Number.isNaN(index) || !array[index]) return;
+
             array[index][target.dataset.field] = target.dataset.kind === "list" ? splitList(target.value) : target.value;
-            renderUploadTargets();
+
+            if (target.dataset.field === "name" && target.dataset.array === "team") {
+                renderUploadTargets(false);
+            }
         }
     });
 }
@@ -94,6 +98,17 @@ function bindEditing() {
 function bindActions() {
     document.getElementById("saveButton").addEventListener("click", saveContent);
     document.getElementById("uploadButton").addEventListener("click", uploadImage);
+
+    // Listener para borrar imagen
+    const clearBtn = document.getElementById("clearImageBtn");
+    if (clearBtn) {
+        clearBtn.addEventListener("click", clearCurrentImage);
+    }
+
+    const selectTarget = document.getElementById("uploadTarget");
+    if (selectTarget) {
+        selectTarget.addEventListener("change", updateCurrentImageUrl);
+    }
 
     document.addEventListener("click", event => {
         const button = event.target.closest("[data-action]");
@@ -106,27 +121,15 @@ function bindActions() {
         if (action === "remove-stat") state.stats.splice(index, 1);
 
         if (action === "add-team") {
-            state.team.push({
-                name: "Nuevo integrante",
-                role: "Cargo",
-                badge: "Especialidad",
-                summary: "Resumen profesional.",
-                bio: "Biografia y experiencia.",
-                imageUrl: "",
-                accent: "gold",
-                tags: []
-            });
+            state.team.push({ name: "Nuevo integrante", role: "Cargo", badge: "Especialidad", summary: "Resumen profesional.", bio: "Biografia y experiencia.", imageUrl: "", accent: "gold", tags: [] });
+            renderUploadTargets(false);
         }
-        if (action === "remove-team") state.team.splice(index, 1);
+        if (action === "remove-team") {
+            state.team.splice(index, 1);
+            renderUploadTargets(false);
+        }
 
-        if (action === "add-service") {
-            state.services.push({
-                title: "Nuevo servicio",
-                description: "Descripcion del servicio legal.",
-                coverage: "Cobertura local.",
-                icon: "shield"
-            });
-        }
+        if (action === "add-service") state.services.push({ title: "Nuevo servicio", description: "Descripcion del servicio legal.", coverage: "Cobertura local.", icon: "shield" });
         if (action === "remove-service") state.services.splice(index, 1);
 
         if (action === "add-authority") state.authorityPoints.push({ title: "Nuevo punto", description: "Descripcion clara." });
@@ -161,27 +164,86 @@ async function saveContent() {
 async function uploadImage() {
     const fileInput = document.getElementById("uploadFile");
     const target = document.getElementById("uploadTarget").value;
+
     if (!fileInput.files.length) {
-        setStatus("Selecciona una imagen primero.", "error");
+        setStatus("Selecciona una imagen primero desde tu computadora.", "error");
         return;
     }
 
     const formData = new FormData();
     formData.append("file", fileInput.files[0]);
-    setStatus("Subiendo imagen...", "");
+    setStatus("Subiendo imagen al servidor...", "");
 
     try {
         const result = await apiFetch("/api/admin/uploads", {
             method: "POST",
             body: formData
         });
+
         setByPath(state, target, result.url);
-        hydrateForm();
-        renderEditors();
+
         fileInput.value = "";
-        setStatus(`Imagen subida y asignada: ${result.url}`, "ok");
+        updateCurrentImageUrl();
+
+        setStatus(`Imagen subida y asignada con éxito al ítem. Recuerda Guardar Cambios para aplicar a la web.`, "ok");
     } catch (error) {
         setStatus(error.message || "No se pudo subir la imagen.", "error");
+    }
+}
+
+// Nueva función para borrar la imagen actual
+function clearCurrentImage() {
+    const select = document.getElementById("uploadTarget");
+    if (!select) return;
+
+    const targetPath = select.value;
+
+    // Setear a cadena vacía
+    setByPath(state, targetPath, "");
+
+    // Refrescar UI
+    updateCurrentImageUrl();
+    setStatus("Imagen borrada localmente. Recuerda Guardar Cambios.", "ok");
+}
+
+function renderUploadTargets(resetSelection = true) {
+    const select = document.getElementById("uploadTarget");
+    if (!select) return;
+
+    const previousSelection = select.value;
+
+    const options = [
+        ["visuals.logoUrl", "Logo del estudio"],
+        ["visuals.heroImageUrl", "Imagen principal (Fondo Hero)"],
+        ...state.team.map((member, index) => [`team.${index}.imageUrl`, `Foto de Abogado: ${member.name || `Integrante ${index + 1}`}`])
+    ];
+
+    select.innerHTML = options.map(([value, label]) => `<option value="${escapeHtml(value)}">${escapeHtml(label)}</option>`).join("");
+
+    if (!resetSelection && previousSelection) {
+        const exists = Array.from(select.options).some(opt => opt.value === previousSelection);
+        if (exists) select.value = previousSelection;
+    }
+
+    updateCurrentImageUrl();
+}
+
+function updateCurrentImageUrl() {
+    const select = document.getElementById("uploadTarget");
+    const urlDisplay = document.getElementById("currentImageUrl");
+    const clearBtn = document.getElementById("clearImageBtn");
+
+    if (!select || !urlDisplay) return;
+
+    const targetPath = select.value;
+    const currentUrl = getByPath(state, targetPath);
+
+    if (currentUrl && currentUrl.trim() !== "") {
+        urlDisplay.value = currentUrl;
+        if (clearBtn) clearBtn.style.display = "block";
+    } else {
+        urlDisplay.value = "";
+        if (clearBtn) clearBtn.style.display = "none";
     }
 }
 
@@ -232,7 +294,9 @@ function renderTeam() {
         ${field("Cargo", "team", index, "role", member.role)}
         ${field("Insignia", "team", index, "badge", member.badge)}
         ${selectField("Acento", "team", index, "accent", member.accent, [["gold", "Dorado"], ["blue", "Azul"]])}
-        ${field("Foto URL", "team", index, "imageUrl", member.imageUrl)}
+        
+        <input type="hidden" data-array="team" data-index="${index}" data-field="imageUrl" value="${safeAttr(member.imageUrl)}">
+        
         ${field("Etiquetas por coma", "team", index, "tags", (member.tags || []).join(", "), "list")}
         ${textareaField("Resumen", "team", index, "summary", member.summary)}
         ${textareaField("Biografia", "team", index, "bio", member.bio)}
@@ -289,16 +353,6 @@ function renderSocials() {
   `).join("");
 }
 
-function renderUploadTargets() {
-    const select = document.getElementById("uploadTarget");
-    const options = [
-        ["visuals.logoUrl", "Logo del estudio"],
-        ["visuals.heroImageUrl", "Imagen principal del inicio"],
-        ...state.team.map((member, index) => [`team.${index}.imageUrl`, `Foto: ${member.name || `Integrante ${index + 1}`}`])
-    ];
-    select.innerHTML = options.map(([value, label]) => `<option value="${escapeHtml(value)}">${escapeHtml(label)}</option>`).join("");
-}
-
 function field(label, arrayName, index, fieldName, value, kind = "") {
     return `
     <label>${escapeHtml(label)}
@@ -326,6 +380,65 @@ function selectField(label, arrayName, index, fieldName, value, options) {
       <select data-array="${escapeHtml(arrayName)}" data-index="${index}" data-field="${escapeHtml(fieldName)}">${body}</select>
     </label>
   `;
+}
+
+// === BOT TESTER ===
+function bindBotTester() {
+    const sendBtn = document.getElementById('adminBotSend');
+    const input = document.getElementById('adminBotInput');
+    const chat = document.getElementById('adminBotChat');
+
+    if (!sendBtn || !input || !chat) return;
+
+    function addMessage(text, type) {
+        const div = document.createElement('div');
+        div.className = type === 'bot' ? 'admin-bot-msg' : 'admin-user-msg';
+        div.textContent = text;
+        chat.appendChild(div);
+        chat.scrollTop = chat.scrollHeight;
+    }
+
+    function generateBotResponse(rawQuery) {
+        const c = state;
+        if (!c) return "El panel aún no ha cargado los datos.";
+
+        const q = rawQuery.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+        if (/\b(hola|buenos dias|buenas tardes|buenas noches|saludos|que tal)\b/.test(q)) { return `¡Hola! Bienvenido al asistente virtual de ${c.brand.name}. ¿En qué área legal puedo ayudarte hoy?`; }
+        if (/\b(hora|horario|atienden|abierto|abiertos|cierran|fines de semana|sabados)\b/.test(q)) { return `Nuestro horario de atención oficial es: ${c.contact.officeHours}. ¿Deseas agendar una cita?`; }
+        if (/\b(donde|direccion|ubicacion|ubicados|llegar|oficina|estudio|babahoyo|montalvo)\b/.test(q)) { return `Nuestra oficina principal se encuentra en: ${c.contact.address}. Además, brindamos cobertura experta en ${(c.contact.coverageCities || []).join(', ')}.`; }
+        if (/\b(telefono|numero|llamar|contacto|contactar|whatsapp|correo|email)\b/.test(q)) { return `Puedes llamarnos o escribirnos por WhatsApp al ${c.contact.whatsApp}. Nuestro correo oficial es ${c.contact.email}.`; }
+        if (/\b(abogado|abogada|quienes|equipo|experiencia|perfil|zoila|julio|manzano|segura)\b/.test(q)) {
+            const teamNames = (c.team || []).map(t => `${t.name} (${t.role})`).join(' y ');
+            return `Nuestro equipo de expertos está liderado por ${teamNames}. Combinamos sólida experiencia judicial y estrategia legal moderna para tu defensa.`;
+        }
+        if (/\b(cita|agendar|reunion|consulta|consultar|precio|costo|pagar|honorarios|cuanto cobran)\b/.test(q)) { return `Para consultas específicas, evaluación de tu caso y honorarios, te sugiero hablar directamente con nuestros abogados. Haz clic en el botón de WhatsApp de esta página para asistencia inmediata.`; }
+
+        const matchedService = (c.services || []).find(s => {
+            const keywords = s.title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().split(' ');
+            return keywords.some(kw => q.includes(kw) && kw.length > 3);
+        });
+        if (matchedService) { return `Sobre ${matchedService.title}: ${matchedService.description} Atendemos estos casos en ${matchedService.coverage}.`; }
+
+        if (/\b(servicio|hacen|casos|ayudar|trabajan|especialidad|derecho|civil|penal|familia|laboral|transito|tierras|divorcio|alimentos)\b/.test(q)) {
+            const servicesList = (c.services || []).map(s => s.title).join(', ');
+            return `Nos especializamos en diversas ramas del derecho, incluyendo: ${servicesList}. Cuéntame brevemente tu caso.`;
+        }
+        return `Comprendo. Cada caso legal es único y requiere un análisis cuidadoso. Para darte la estrategia correcta, por favor envíanos un mensaje por WhatsApp al ${c.contact.whatsApp}.`;
+    }
+
+    function handleSend() {
+        const text = input.value.trim();
+        if (!text) return;
+        addMessage(text, 'user');
+        input.value = '';
+        setTimeout(() => {
+            addMessage(generateBotResponse(text), 'bot');
+        }, 300);
+    }
+
+    sendBtn.onclick = handleSend;
+    input.onkeypress = (e) => { if (e.key === 'Enter') handleSend(); };
 }
 
 async function apiFetch(url, options = {}) {

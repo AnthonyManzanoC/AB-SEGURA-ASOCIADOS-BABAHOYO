@@ -1,172 +1,256 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Admin | Segura & Manzano</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/site.css">
-  <link rel="stylesheet" href="/assets/admin.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin | Segura & Manzano</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/site.css">
+    <link rel="stylesheet" href="/assets/admin.css">
+    <style>
+        .admin-bot-tester {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .admin-bot-chat {
+            height: 200px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-right: 8px;
+            font-size: 0.85rem;
+        }
+
+        .admin-bot-msg {
+            background: rgba(255,255,255,0.05);
+            color: var(--pearl);
+            padding: 8px 12px;
+            border-radius: 6px;
+            align-self: flex-start;
+            max-width: 90%;
+        }
+
+        .admin-user-msg {
+            background: rgba(199, 144, 75, 0.15);
+            color: var(--copper-hot);
+            padding: 8px 12px;
+            border-radius: 6px;
+            align-self: flex-end;
+            max-width: 90%;
+        }
+
+        .admin-bot-input {
+            display: flex;
+            gap: 8px;
+        }
+
+            .admin-bot-input input {
+                flex: 1;
+                min-height: 36px;
+                padding: 0 12px;
+                border-radius: 4px;
+            }
+
+            .admin-bot-input button {
+                min-height: 36px;
+            }
+
+        .readonly-box {
+            background: rgba(0,0,0,0.3) !important;
+            color: var(--muted) !important;
+            cursor: not-allowed;
+            border-color: transparent !important;
+        }
+        /* Estilo para alinear el input readonly y el botón borrar */
+        .url-display-group {
+            display: flex;
+            gap: 10px;
+            align-items: stretch;
+        }
+    </style>
 </head>
 <body class="admin-body">
-  <main class="admin-shell">
-    <section class="login-panel" id="loginPanel">
-      <div class="admin-brand">
-        <span class="brand-mark">SM</span>
-        <div>
-          <strong>Segura & Manzano</strong>
-          <small>Panel de contenido</small>
-        </div>
-      </div>
-      <form class="login-form" id="loginForm">
-        <label>
-          Usuario
-          <input id="username" autocomplete="username" required>
-        </label>
-        <label>
-          Clave
-          <input id="password" type="password" autocomplete="current-password" required>
-        </label>
-        <button class="btn btn-primary" type="submit">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h4v18h-4M10 17l5-5-5-5M15 12H3"/></svg>
-          Entrar
-        </button>
-        <p class="form-message" id="loginMessage"></p>
-      </form>
-    </section>
-
-    <section class="dashboard" id="dashboard" hidden>
-      <header class="admin-header">
-        <div>
-          <span class="eyebrow">Admin web</span>
-          <h1>Contenido editable del estudio</h1>
-          <p>Todo lo que guardes aqui se refleja en el inicio mediante la API.</p>
-        </div>
-        <div class="admin-actions">
-          <a class="btn btn-ghost" href="/" target="_blank" rel="noopener">Ver web</a>
-          <button class="btn btn-primary" id="saveButton" type="button">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h12l2 2v14H5V4Zm3 0v6h8V4M8 20v-6h8v6"/></svg>
-            Guardar cambios
-          </button>
-          <button class="btn btn-ghost" id="logoutButton" type="button">Salir</button>
-        </div>
-      </header>
-
-      <p class="status-line" id="statusLine">Listo para editar.</p>
-
-      <div class="admin-grid">
-        <section class="admin-card">
-          <h2>Marca y SEO</h2>
-          <div class="field-grid">
-            <label>Titulo SEO<input data-path="meta.title"></label>
-            <label>Palabras clave<input data-path="meta.keywords"></label>
-            <label class="wide">Descripcion SEO<textarea rows="3" data-path="meta.description"></textarea></label>
-            <label>Nombre comercial<input data-path="brand.name"></label>
-            <label>Nombre legal<input data-path="brand.legalName"></label>
-            <label>Iniciales/logo texto<input data-path="brand.shortName"></label>
-            <label class="wide">Frase de marca<input data-path="brand.tagline"></label>
-          </div>
+    <main class="admin-shell">
+        <section class="login-panel" id="loginPanel">
+            <div class="admin-brand">
+                <span class="brand-mark">SM</span>
+                <div>
+                    <strong>Segura & Manzano</strong>
+                    <small>Panel de contenido</small>
+                </div>
+            </div>
+            <form class="login-form" id="loginForm">
+                <label>Usuario<input id="username" autocomplete="username" required></label>
+                <label>Clave<input id="password" type="password" autocomplete="current-password" required></label>
+                <button class="btn btn-primary" type="submit">Entrar</button>
+                <p class="form-message" id="loginMessage"></p>
+            </form>
         </section>
 
-        <section class="admin-card">
-          <h2>Inicio hero</h2>
-          <div class="field-grid">
-            <label>Linea superior<input data-path="hero.eyebrow"></label>
-            <label>Titulo<input data-path="hero.title"></label>
-            <label>Remate destacado<input data-path="hero.highlight"></label>
-            <label>Boton principal<input data-path="hero.primaryCta"></label>
-            <label>Boton secundario<input data-path="hero.secondaryCta"></label>
-            <label class="wide">Subtitulo<textarea rows="4" data-path="hero.subtitle"></textarea></label>
-          </div>
-        </section>
+        <section class="dashboard" id="dashboard" hidden>
+            <header class="admin-header">
+                <div>
+                    <span class="eyebrow">Admin web</span>
+                    <h1>Contenido editable del estudio</h1>
+                    <p>Todo lo que guardes aqui se refleja en el inicio mediante la API.</p>
+                </div>
+                <div class="admin-actions">
+                    <a class="btn btn-ghost" href="/" target="_blank" rel="noopener">Ver web</a>
+                    <button class="btn btn-primary" id="saveButton" type="button">Guardar cambios</button>
+                    <button class="btn btn-ghost" id="logoutButton" type="button">Salir</button>
+                </div>
+            </header>
 
-        <section class="admin-card">
-          <div class="card-heading">
-            <h2>Visuales</h2>
-            <button class="mini-button" id="uploadButton" type="button">Subir imagen</button>
-          </div>
-          <div class="field-grid">
-            <label>Logo URL<input data-path="visuals.logoUrl" placeholder="/uploads/logo.png"></label>
-            <label>Imagen hero URL<input data-path="visuals.heroImageUrl" placeholder="/uploads/hero.webp"></label>
-            <label>Asignar subida a<select id="uploadTarget"></select></label>
-            <label>Archivo<input id="uploadFile" type="file" accept="image/png,image/jpeg,image/webp"></label>
-          </div>
-          <p class="help-text">Sube fotos reales de los abogados, logo o fondo hero. El sistema guarda el archivo en <code>/uploads</code>.</p>
-        </section>
+            <p class="status-line" id="statusLine">Listo para editar.</p>
 
-        <section class="admin-card">
-          <h2>Contacto y cobertura</h2>
-          <div class="field-grid">
-            <label>Telefono<input data-path="contact.phone"></label>
-            <label>WhatsApp solo numeros<input data-path="contact.whatsApp"></label>
-            <label>Correo<input data-path="contact.email"></label>
-            <label>Mapa URL<input data-path="contact.mapUrl"></label>
-            <label class="wide">Direccion<input data-path="contact.address"></label>
-            <label class="wide">Horario<input data-path="contact.officeHours"></label>
-            <label class="wide">Ciudades de cobertura, separadas por coma<input data-path-list="contact.coverageCities"></label>
-          </div>
-          <div class="card-heading inline-heading">
-            <h3>Redes sociales</h3>
-            <button class="mini-button" data-action="add-social" type="button">Agregar red</button>
-          </div>
-          <div class="stack-list" id="socialEditor"></div>
-        </section>
+            <div class="admin-grid">
+                <section class="admin-card">
+                    <h2>Marca y SEO</h2>
+                    <div class="field-grid">
+                        <label>Titulo SEO<input data-path="meta.title"></label>
+                        <label>Palabras clave<input data-path="meta.keywords"></label>
+                        <label class="wide">Descripcion SEO<textarea rows="3" data-path="meta.description"></textarea></label>
+                        <label>Nombre comercial<input data-path="brand.name"></label>
+                        <label>Nombre legal<input data-path="brand.legalName"></label>
+                        <label>Iniciales/logo texto<input data-path="brand.shortName"></label>
+                        <label class="wide">Frase de marca<input data-path="brand.tagline"></label>
+                    </div>
+                </section>
 
-        <section class="admin-card">
-          <div class="card-heading">
-            <h2>Estadisticas del hero</h2>
-            <button class="mini-button" data-action="add-stat" type="button">Agregar</button>
-          </div>
-          <div class="stack-list" id="statsEditor"></div>
-        </section>
+                <section class="admin-card">
+                    <h2>Inicio hero</h2>
+                    <div class="field-grid">
+                        <label>Linea superior<input data-path="hero.eyebrow"></label>
+                        <label>Titulo<input data-path="hero.title"></label>
+                        <label>Remate destacado<input data-path="hero.highlight"></label>
+                        <label>Boton principal<input data-path="hero.primaryCta"></label>
+                        <label>Boton secundario<input data-path="hero.secondaryCta"></label>
+                        <label class="wide">Subtitulo<textarea rows="4" data-path="hero.subtitle"></textarea></label>
+                    </div>
+                </section>
 
-        <section class="admin-card wide-card">
-          <div class="card-heading">
-            <h2>Equipo e integrantes</h2>
-            <button class="mini-button" data-action="add-team" type="button">Agregar integrante</button>
-          </div>
-          <div class="field-grid section-copy">
-            <label>Eyebrow<input data-path="teamSection.eyebrow"></label>
-            <label>Titulo<input data-path="teamSection.title"></label>
-            <label>Destacado<input data-path="teamSection.highlight"></label>
-            <label class="wide">Descripcion<textarea rows="3" data-path="teamSection.description"></textarea></label>
-          </div>
-          <div class="stack-list large" id="teamEditor"></div>
-        </section>
+                <section class="admin-card">
+                    <div class="card-heading">
+                        <h2>Gestor de Imágenes</h2>
+                        <button class="mini-button" id="uploadButton" type="button">Subir imagen</button>
+                    </div>
+                    <div class="field-grid">
+                        <label class="wide">
+                            1. ¿Qué imagen deseas cambiar?
+                            <select id="uploadTarget"></select>
+                        </label>
 
-        <section class="admin-card wide-card">
-          <div class="card-heading">
-            <h2>Servicios</h2>
-            <button class="mini-button" data-action="add-service" type="button">Agregar servicio</button>
-          </div>
-          <div class="field-grid section-copy">
-            <label>Eyebrow<input data-path="servicesSection.eyebrow"></label>
-            <label>Titulo<input data-path="servicesSection.title"></label>
-            <label>Destacado<input data-path="servicesSection.highlight"></label>
-            <label class="wide">Descripcion<textarea rows="3" data-path="servicesSection.description"></textarea></label>
-          </div>
-          <div class="stack-list large" id="servicesEditor"></div>
-        </section>
+                        <label class="wide">
+                            URL actual en el sistema
+                            <div class="url-display-group">
+                                <input id="currentImageUrl" class="readonly-box" readonly placeholder="Sin imagen / Vacío" style="flex: 1;">
+                                <button type="button" id="clearImageBtn" class="mini-button danger" style="margin: 0; min-height: 44px; display: none;">Borrar</button>
+                            </div>
+                        </label>
 
-        <section class="admin-card wide-card">
-          <div class="card-heading">
-            <h2>Autoridad</h2>
-            <button class="mini-button" data-action="add-authority" type="button">Agregar punto</button>
-          </div>
-          <div class="field-grid section-copy">
-            <label>Eyebrow<input data-path="authoritySection.eyebrow"></label>
-            <label>Titulo<input data-path="authoritySection.title"></label>
-            <label>Destacado<input data-path="authoritySection.highlight"></label>
-            <label class="wide">Descripcion<textarea rows="3" data-path="authoritySection.description"></textarea></label>
-          </div>
-          <div class="stack-list large" id="authorityEditor"></div>
-        </section>
-      </div>
-    </section>
-  </main>
+                        <label class="wide">
+                            2. Subir nuevo archivo (Reemplazará la actual)
+                            <input id="uploadFile" type="file" accept="image/png,image/jpeg,image/webp">
+                        </label>
+                    </div>
+                    <p class="help-text">Elige qué elemento quieres actualizar en la lista desplegable. Luego selecciona un archivo de tu PC y presiona "Subir imagen". El sistema la vinculará automáticamente a ese abogado o logo.</p>
+                </section>
 
-  <script src="/assets/admin.js" defer></script>
+                <section class="admin-card">
+                    <h2>Contacto y cobertura</h2>
+                    <div class="field-grid">
+                        <label>Telefono<input data-path="contact.phone"></label>
+                        <label>WhatsApp solo numeros<input data-path="contact.whatsApp"></label>
+                        <label>Correo<input data-path="contact.email"></label>
+                        <label>Mapa URL<input data-path="contact.mapUrl"></label>
+                        <label class="wide">Direccion<input data-path="contact.address"></label>
+                        <label class="wide">Horario<input data-path="contact.officeHours"></label>
+                        <label class="wide">Ciudades de cobertura, separadas por coma<input data-path-list="contact.coverageCities"></label>
+                    </div>
+                    <div class="card-heading inline-heading">
+                        <h3>Redes sociales</h3>
+                        <button class="mini-button" data-action="add-social" type="button">Agregar red</button>
+                    </div>
+                    <div class="stack-list" id="socialEditor"></div>
+                </section>
+
+                <section class="admin-card wide-card">
+                    <h2>Simulador del Asistente (Bot)</h2>
+                    <p class="help-text">Prueba aquí cómo responderá el asistente virtual a los clientes usando la información actual que has ingresado arriba. El bot busca palabras clave como: hora, donde, telefono, abogado, costo, y nombres de servicios.</p>
+                    <div class="admin-bot-tester">
+                        <div class="admin-bot-chat" id="adminBotChat">
+                            <div class="admin-bot-msg">Simulador iniciado. Escribe una pregunta para probar mis respuestas.</div>
+                        </div>
+                        <div class="admin-bot-input">
+                            <input type="text" id="adminBotInput" placeholder="Ej: ¿Cuáles son sus horarios?">
+                            <button class="btn btn-ghost" id="adminBotSend" type="button">Probar</button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="admin-card">
+                    <div class="card-heading">
+                        <h2>Estadisticas del hero</h2>
+                        <button class="mini-button" data-action="add-stat" type="button">Agregar</button>
+                    </div>
+                    <div class="stack-list" id="statsEditor"></div>
+                </section>
+
+                <section class="admin-card wide-card">
+                    <div class="card-heading">
+                        <h2>Equipo e integrantes</h2>
+                        <button class="mini-button" data-action="add-team" type="button">Agregar integrante</button>
+                    </div>
+                    <div class="field-grid section-copy">
+                        <label>Eyebrow<input data-path="teamSection.eyebrow"></label>
+                        <label>Titulo<input data-path="teamSection.title"></label>
+                        <label>Destacado<input data-path="teamSection.highlight"></label>
+                        <label class="wide">Descripcion<textarea rows="3" data-path="teamSection.description"></textarea></label>
+                    </div>
+                    <div class="stack-list large" id="teamEditor"></div>
+                </section>
+
+                <section class="admin-card wide-card">
+                    <div class="card-heading">
+                        <h2>Servicios</h2>
+                        <button class="mini-button" data-action="add-service" type="button">Agregar servicio</button>
+                    </div>
+                    <div class="field-grid section-copy">
+                        <label>Eyebrow<input data-path="servicesSection.eyebrow"></label>
+                        <label>Titulo<input data-path="servicesSection.title"></label>
+                        <label>Destacado<input data-path="servicesSection.highlight"></label>
+                        <label class="wide">Descripcion<textarea rows="3" data-path="servicesSection.description"></textarea></label>
+                    </div>
+                    <div class="stack-list large" id="servicesEditor"></div>
+                </section>
+
+                <section class="admin-card wide-card">
+                    <div class="card-heading">
+                        <h2>Autoridad</h2>
+                        <button class="mini-button" data-action="add-authority" type="button">Agregar punto</button>
+                    </div>
+                    <div class="field-grid section-copy">
+                        <label>Eyebrow<input data-path="authoritySection.eyebrow"></label>
+                        <label>Titulo<input data-path="authoritySection.title"></label>
+                        <label>Destacado<input data-path="authoritySection.highlight"></label>
+                        <label class="wide">Descripcion<textarea rows="3" data-path="authoritySection.description"></textarea></label>
+                    </div>
+                    <div class="stack-list large" id="authorityEditor"></div>
+                </section>
+            </div>
+        </section>
+    </main>
+
+    <script src="/assets/admin.js" defer></script>
 </body>
 </html>

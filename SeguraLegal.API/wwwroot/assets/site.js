@@ -128,6 +128,22 @@ function mergeContent(base, incoming) {
     return { ...base, ...incoming, meta: { ...base.meta, ...incoming.meta }, brand: { ...base.brand, ...incoming.brand }, hero: { ...base.hero, ...incoming.hero }, teamSection: { ...base.teamSection, ...incoming.teamSection }, servicesSection: { ...base.servicesSection, ...incoming.servicesSection }, authoritySection: { ...base.authoritySection, ...incoming.authoritySection }, contact: { ...base.contact, ...incoming.contact }, visuals: { ...base.visuals, ...incoming.visuals } };
 }
 
+// === LÓGICA DE MANEJO DE ERRORES DE IMÁGENES (NUEVA MEJORA) ===
+// Si una imagen se borra del servidor o falla, la reemplaza por las iniciales para que no se vea rota.
+window.handleImageError = function (imgElement, fallbackName) {
+    const parent = imgElement.parentElement;
+    if (parent) {
+        parent.innerHTML = `<div class="team-initials">${escapeHtml(initials(fallbackName))}</div>`;
+    }
+};
+
+window.handleLogoError = function (imgElement, shortName) {
+    const parent = imgElement.parentElement;
+    if (parent) {
+        parent.textContent = shortName;
+    }
+};
+
 // === LOGICA DE RENDERIZADO ===
 function renderSite(content) {
     const metaDescription = document.querySelector('meta[name="description"]');
@@ -144,7 +160,10 @@ function renderSite(content) {
     const propLogo = document.getElementById("propagandaLogo");
 
     if (content.visuals.logoUrl) {
-        const imgHtml = `<img src="${safeAttr(content.visuals.logoUrl)}" alt="${safeAttr(content.brand.name)}">`;
+        const safeName = safeAttr(content.brand.name);
+        const safeShort = safeAttr(content.brand.shortName || initials(content.brand.name));
+        // Agregamos onerror a los logos
+        const imgHtml = `<img src="${safeAttr(content.visuals.logoUrl)}" alt="${safeName}" onerror="window.handleLogoError(this, '${safeShort}')">`;
         if (brandMark) brandMark.innerHTML = imgHtml;
         if (preloaderLogo) preloaderLogo.innerHTML = imgHtml;
         if (propLogo) propLogo.innerHTML = imgHtml;
@@ -188,7 +207,10 @@ function renderTeam(team) {
     const target = document.getElementById("teamGrid");
     if (!target) return;
     target.innerHTML = team.map((member, index) => {
-        const image = member.imageUrl ? `<img src="${safeAttr(member.imageUrl)}" alt="${safeAttr(member.name)}">` : `<div class="team-initials">${escapeHtml(initials(member.name))}</div>`;
+        // Agregamos onerror a la imagen del equipo
+        const image = member.imageUrl
+            ? `<img src="${safeAttr(member.imageUrl)}" alt="${safeAttr(member.name)}" onerror="window.handleImageError(this, '${safeAttr(member.name)}')">`
+            : `<div class="team-initials">${escapeHtml(initials(member.name))}</div>`;
         const tags = (member.tags || []).map(tag => `<span class="pill">${escapeHtml(tag)}</span>`).join("");
         return `<article class="team-card reveal" onclick="openProfileModal(${index})"><div class="team-photo">${image}</div><div class="team-body"><span class="badge ${escapeHtml(member.accent || "gold")}">${escapeHtml(member.badge)}</span><h3 class="editorial-title">${escapeHtml(member.name)}</h3><h4 class="role-text">${escapeHtml(member.role)}</h4><p class="bio-text">${escapeHtml(member.summary)}</p><div class="team-tags">${tags}</div></div></article>`;
     }).join("");
@@ -212,7 +234,7 @@ function renderContact(contact) {
     const coverage = (contact.coverageCities || []).map(city => `<span class="pill">${escapeHtml(city)}</span>`).join("");
     const socials = (contact.socialLinks || []).filter(link => link.label).map(link => `<a class="pill" href="${safeAttr(link.url || "#")}" target="_blank" rel="noopener">${escapeHtml(link.label)}</a>`).join("");
 
-    const mapEmbedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(contact.address)}&output=embed`;
+    const mapEmbedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(contact.address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
 
     target.innerHTML = `<div class="contact-row"><strong>Telefono</strong><span>${escapeHtml(contact.phone)}</span></div><div class="contact-row"><strong>WhatsApp</strong><a href="${safeAttr(buildWhatsAppUrl(contact.whatsApp, "Hola."))}" target="_blank" rel="noopener">${escapeHtml(contact.whatsApp)}</a></div><div class="contact-row"><strong>Correo</strong><a href="mailto:${safeAttr(contact.email)}">${escapeHtml(contact.email)}</a></div><div class="contact-row"><strong>Direccion</strong><span>${escapeHtml(contact.address)}</span></div><div class="contact-row"><strong>Horario</strong><span>${escapeHtml(contact.officeHours)}</span></div><div class="contact-row"><strong>Cobertura</strong><div class="coverage-tags">${coverage}</div></div><div class="contact-row"><strong>Redes</strong><div class="social-links">${socials}</div></div><div class="map-container"><iframe src="${safeAttr(mapEmbedUrl)}" loading="lazy" title="Mapa del Estudio" style="border:0;" allowfullscreen></iframe></div>`;
 }
@@ -230,7 +252,12 @@ window.openProfileModal = function (index) {
     const member = window.currentSiteContent.team[index];
     if (!member) return;
     const photoDiv = document.getElementById("modalPhoto");
-    if (photoDiv) photoDiv.innerHTML = member.imageUrl ? `<img src="${safeAttr(member.imageUrl)}" alt="${safeAttr(member.name)}">` : `<div class="team-initials">${escapeHtml(initials(member.name))}</div>`;
+    if (photoDiv) {
+        // Agregamos onerror también a la foto dentro del Modal
+        photoDiv.innerHTML = member.imageUrl
+            ? `<img src="${safeAttr(member.imageUrl)}" alt="${safeAttr(member.name)}" onerror="window.handleImageError(this, '${safeAttr(member.name)}')">`
+            : `<div class="team-initials">${escapeHtml(initials(member.name))}</div>`;
+    }
 
     setText("modalBadge", member.badge);
     const badgeEl = document.getElementById("modalBadge");
@@ -245,7 +272,12 @@ window.openProfileModal = function (index) {
     if (modalTags) modalTags.innerHTML = (member.tags || []).map(t => `<span class="pill">${escapeHtml(t)}</span>`).join("");
 
     const modalLogo = document.getElementById("modalLogo");
-    if (modalLogo) modalLogo.innerHTML = window.currentSiteContent.visuals.logoUrl ? `<img src="${safeAttr(window.currentSiteContent.visuals.logoUrl)}" alt="Logo">` : window.currentSiteContent.brand.shortName;
+    if (modalLogo) {
+        const safeShort = safeAttr(window.currentSiteContent.brand.shortName || initials(window.currentSiteContent.brand.name));
+        modalLogo.innerHTML = window.currentSiteContent.visuals.logoUrl
+            ? `<img src="${safeAttr(window.currentSiteContent.visuals.logoUrl)}" alt="Logo" onerror="window.handleLogoError(this, '${safeShort}')">`
+            : safeShort;
+    }
 
     const contactBtn = document.getElementById("modalContactBtn");
     if (contactBtn) contactBtn.href = buildWhatsAppUrl(window.currentSiteContent.contact.whatsApp, `Hola, quisiera agendar una consulta con ${member.name}.`);
