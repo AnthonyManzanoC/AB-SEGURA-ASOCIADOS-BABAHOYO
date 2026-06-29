@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Segura & Manzano | Abogados Asociados</title>
+    <meta name="description" content="Estudio juridico moderno en Montalvo, Babahoyo y Los Rios.">
+
+    <link rel="icon" id="dynamicFavicon" href="/favicon.ico">
+    <link rel="manifest" id="dynamicManifest">
+    <meta name="theme-color" content="#08090d">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+
+    <div id="preloader" class="preloader">
+        <div class="preloader-content">
+            <div id="preloaderLogo" class="brand-mark preloader-mark">SM</div>
+            <div class="preloader-spinner"></div>
+        </div>
+    </div>
+
+    <nav class="topbar" aria-label="Navegacion principal">
+        <a class="brand" href="#inicio" aria-label="Inicio">
+            <span class="brand-mark" id="brandMark">SM</span>
+            <span class="brand-copy">
+                <strong id="brandName">Segura & Manzano</strong>
+                <small id="brandTagline">Abogados Asociados</small>
+            </span>
+        </a>
+
+        <button class="nav-toggle" id="navToggle" aria-label="Abrir menu" aria-expanded="false">
+            <span></span><span></span>
+        </button>
+
+        <div class="nav-links" id="navLinks">
+            <a href="#equipo">Equipo</a>
+            <a href="#servicios">Servicios</a>
+            <a href="#autoridad">Autoridad</a>
+            <a href="#contacto">Contacto</a>
+
+            <button id="installAppBtn" class="btn btn-ghost nav-install-btn" style="display: none;">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                Instalar App
+            </button>
+
+            <a class="nav-action" id="navWhatsapp" href="#" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 11.8a8.5 8.5 0 0 1-12.7 7.4L3 20.4l1.3-4.6A8.5 8.5 0 1 1 20.5 11.8Zm-8.5-6.9a6.9 6.9 0 0 0-5.9 10.5l.3.5-.7 2.4 2.5-.7.5.3a6.9 6.9 0 1 0 3.3-13Zm4 9.8c-.2.6-1.1 1-1.6 1.1-.4.1-1 .1-1.7-.1-1.4-.4-2.8-1.5-3.6-2.5-.8-.9-1.5-2.1-1.5-3.2 0-1 .5-1.6.8-1.9.2-.2.5-.3.8-.3h.6c.2 0 .4 0 .5.4l.7 1.6c.1.2.1.4 0 .6l-.4.5c-.1.2-.2.3-.1.5.2.4.6.9 1 1.2.5.5 1 .8 1.5 1 .2.1.3 0 .5-.1l.6-.7c.2-.2.4-.2.6-.1l1.6.8c.2.1.4.3.4.5 0 .2 0 .5-.1.7Z" /></svg>
+                WhatsApp
+            </a>
+        </div>
+    </nav>
+
+    <main>
+        <section class="hero" id="inicio">
+            <img class="hero-image" id="heroImage" src="/assets/segura-office.png" alt="">
+            <div class="hero-overlay"></div>
+            <div class="hero-grid"></div>
+            <div class="hero-content reveal">
+                <span class="eyebrow" id="heroEyebrow">Estudio juridico en Los Rios</span>
+                <h1><span id="heroTitle">Experiencia judicial.</span><span id="heroHighlight">Estrategia moderna.</span></h1>
+                <p id="heroSubtitle">Servicios legales claros, firmes y modernos para la provincia de Los Rios.</p>
+                <div class="hero-actions">
+                    <a class="btn btn-primary" id="heroPrimary" href="#" target="_blank" rel="noopener">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 11.8a8.5 8.5 0 0 1-12.7 7.4L3 20.4l1.3-4.6A8.5 8.5 0 1 1 20.5 11.8Zm-8.5-6.9a6.9 6.9 0 0 0-5.9 10.5l.3.5-.7 2.4 2.5-.7.5.3a6.9 6.9 0 1 0 3.3-13Z" /></svg>
+                        <span>Consultar por WhatsApp</span>
+                    </a>
+                    <a class="btn btn-ghost" id="heroSecondary" href="#servicios">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" /></svg>
+                        <span>Ver servicios</span>
+                    </a>
+                </div>
+                <div class="stats" id="statsList"></div>
+            </div>
+        </section>
+
+        <section class="section intro-band" id="equipo">
+            <div class="section-head reveal">
+                <span class="eyebrow" id="teamEyebrow">Nuestro poder</span>
+                <h2><span id="teamTitle">Dos perfiles. Una firma con criterio.</span><em id="teamHighlight">Autoridad + velocidad</em></h2>
+                <p id="teamDescription">Experiencia judicial y mentalidad actual.</p>
+            </div>
+            <div class="team-list" id="teamGrid"></div>
+        </section>
+
+        <section class="section services-band" id="servicios">
+            <div class="section-head reveal">
+                <span class="eyebrow" id="servicesEyebrow">Areas de practica</span>
+                <h2><span id="servicesTitle">Defensa y asesoria para causas reales.</span><em id="servicesHighlight">Sin vueltas</em></h2>
+                <p id="servicesDescription">Trabajamos asuntos civiles, familiares, penales, transito, laborales, contractuales e inmobiliarios.</p>
+            </div>
+            <div class="services-grid" id="servicesGrid"></div>
+        </section>
+
+        <section class="section authority-band" id="autoridad">
+            <div class="authority-layout">
+                <div class="section-head section-head-left reveal">
+                    <span class="eyebrow" id="authorityEyebrow">Por que elegirnos</span>
+                    <h2><span id="authorityTitle">Un estudio nuevo, con experiencia de sala.</span><em id="authorityHighlight">Y mentalidad actual</em></h2>
+                    <p id="authorityDescription">Seriedad tecnica, comunicacion clara y ejecucion moderna.</p>
+                </div>
+                <div class="authority-points" id="authorityPoints"></div>
+            </div>
+        </section>
+
+        <section class="section contact-band" id="contacto">
+            <div class="contact-layout">
+                <div class="contact-copy reveal">
+                    <span class="eyebrow">Contacto directo</span>
+                    <h2>Cuente el caso. Reciba una ruta clara.</h2>
+                    <p>No guardamos un portal pesado ni fichas de clientes en esta web. El contacto inicial va directo por WhatsApp, telefono o correo.</p>
+                    <div class="contact-actions">
+                        <a class="btn btn-primary" id="contactWhatsapp" href="#" target="_blank" rel="noopener">Abrir WhatsApp</a>
+                        <a class="btn btn-ghost" id="contactEmail" href="#">Enviar correo</a>
+                    </div>
+                </div>
+                <div class="contact-panel reveal" id="contactPanel"></div>
+            </div>
+        </section>
+
+        <section class="propaganda-band reveal">
+            <div class="propaganda-content">
+                <div id="propagandaLogo" class="propaganda-giant-logo">SM</div>
+                <h2 id="propagandaTitle" class="editorial-title">Segura & Manzano</h2>
+                <p id="propagandaTagline" class="role-text">Abogados Asociados</p>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="footer">
+        <div>
+            <strong id="footerBrand">Segura & Manzano</strong>
+            <p id="footerText">Abogados Asociados</p>
+        </div>
+        <div class="footer-links">
+            <a href="#inicio">Inicio</a>
+            <a href="#servicios">Servicios</a>
+            <a href="/admin.html">Admin</a>
+        </div>
+    </footer>
+
+    <a class="float-whatsapp" id="floatWhatsapp" href="#" target="_blank" rel="noopener" aria-label="Consulta por WhatsApp">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 11.8a8.5 8.5 0 0 1-12.7 7.4L3 20.4l1.3-4.6A8.5 8.5 0 1 1 20.5 11.8Zm-8.5-6.9a6.9 6.9 0 0 0-5.9 10.5l.3.5-.7 2.4 2.5-.7.5.3a6.9 6.9 0 1 0 3.3-13Z" /></svg>
+    </a>
+
+    <dialog id="profileDialog" class="profile-modal">
+        <div class="profile-modal-inner">
+            <button id="closeProfileBtn" class="profile-close" aria-label="Cerrar">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+            </button>
+            <div class="profile-layout">
+                <div class="profile-left">
+                    <div id="modalPhoto" class="team-photo modal-photo"></div>
+                </div>
+                <div class="profile-right">
+                    <span id="modalBadge" class="badge"></span>
+                    <h2 id="modalName" class="editorial-title"></h2>
+                    <h4 id="modalRole" class="role-text"></h4>
+                    <div id="modalBio" class="bio-text"></div>
+                    <div id="modalTags" class="team-tags"></div>
+
+                    <div class="profile-footer-brand">
+                        <span class="brand-mark" id="modalLogo"></span>
+                        <div class="profile-footer-actions">
+                            <a class="btn btn-primary" id="modalContactBtn" href="#" target="_blank">Agendar consulta con el abogado</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </dialog>
+
+    <script src="/assets/site.js" defer></script>
+</body>
+</html>

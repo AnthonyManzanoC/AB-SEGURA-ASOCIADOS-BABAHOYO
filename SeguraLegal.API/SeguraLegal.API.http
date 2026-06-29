@@ -1,0 +1,6 @@
+@SeguraLegal.API_HostAddress = http://localhost:5183
+
+GET {{SeguraLegal.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
