@@ -1,4 +1,4 @@
-// === 1. VARIABLES Y EVENTOS GLOBALES PWA (Deben estar arriba del todo) ===
+// === 1. VARIABLES Y EVENTOS GLOBALES PWA ===
 let deferredPrompt;
 let isInstallReady = false;
 
@@ -75,6 +75,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderSite(content);
     bindReveal();
     bindModal();
+    bindFooterObserver(); // Ocultador de botones
+    initShadowBot();
 
     setTimeout(() => {
         const preloader = document.getElementById("preloader");
@@ -137,7 +139,6 @@ function renderSite(content) {
     setText("footerBrand", content.brand.legalName || content.brand.name);
     setText("footerText", content.brand.tagline);
 
-    // Inyectar Logos
     const brandMark = document.getElementById("brandMark");
     const preloaderLogo = document.getElementById("preloaderLogo");
     const propLogo = document.getElementById("propagandaLogo");
@@ -154,7 +155,6 @@ function renderSite(content) {
         if (propLogo) propLogo.textContent = defaultText;
     }
 
-    // Textos para la propaganda gigante
     setText("propagandaTitle", content.brand.name);
     setText("propagandaTagline", content.brand.tagline);
 
@@ -212,10 +212,9 @@ function renderContact(contact) {
     const coverage = (contact.coverageCities || []).map(city => `<span class="pill">${escapeHtml(city)}</span>`).join("");
     const socials = (contact.socialLinks || []).filter(link => link.label).map(link => `<a class="pill" href="${safeAttr(link.url || "#")}" target="_blank" rel="noopener">${escapeHtml(link.label)}</a>`).join("");
 
-    // ¡CORRECCIÓN AQUÍ! Se usa HTTPS para evitar el bloqueo de Mixed Content
     const mapEmbedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(contact.address)}&output=embed`;
 
-    target.innerHTML = `<div class="contact-row"><strong>Telefono</strong><span>${escapeHtml(contact.phone)}</span></div><div class="contact-row"><strong>WhatsApp</strong><a href="${safeAttr(buildWhatsAppUrl(contact.whatsApp, "Hola."))}" target="_blank" rel="noopener">${escapeHtml(contact.whatsApp)}</a></div><div class="contact-row"><strong>Correo</strong><a href="mailto:${safeAttr(contact.email)}">${escapeHtml(contact.email)}</a></div><div class="contact-row"><strong>Direccion</strong><span>${escapeHtml(contact.address)}</span></div><div class="contact-row"><strong>Horario</strong><span>${escapeHtml(contact.officeHours)}</span></div><div class="contact-row"><strong>Cobertura</strong><div class="coverage-tags">${coverage}</div></div><div class="contact-row"><strong>Redes</strong><div class="social-links">${socials}</div></div><div class="map-container"><iframe src="${safeAttr(mapEmbedUrl)}" loading="lazy" title="Mapa del Estudio"></iframe></div>`;
+    target.innerHTML = `<div class="contact-row"><strong>Telefono</strong><span>${escapeHtml(contact.phone)}</span></div><div class="contact-row"><strong>WhatsApp</strong><a href="${safeAttr(buildWhatsAppUrl(contact.whatsApp, "Hola."))}" target="_blank" rel="noopener">${escapeHtml(contact.whatsApp)}</a></div><div class="contact-row"><strong>Correo</strong><a href="mailto:${safeAttr(contact.email)}">${escapeHtml(contact.email)}</a></div><div class="contact-row"><strong>Direccion</strong><span>${escapeHtml(contact.address)}</span></div><div class="contact-row"><strong>Horario</strong><span>${escapeHtml(contact.officeHours)}</span></div><div class="contact-row"><strong>Cobertura</strong><div class="coverage-tags">${coverage}</div></div><div class="contact-row"><strong>Redes</strong><div class="social-links">${socials}</div></div><div class="map-container"><iframe src="${safeAttr(mapEmbedUrl)}" loading="lazy" title="Mapa del Estudio" style="border:0;" allowfullscreen></iframe></div>`;
 }
 
 // === LOGICA DEL MODAL DE PERFIL ===
@@ -254,6 +253,166 @@ window.openProfileModal = function (index) {
     const dialog = document.getElementById("profileDialog");
     if (dialog) { dialog.showModal(); document.body.classList.add("modal-open"); }
 };
+
+// === CEREBRO AVANZADO DEL ASISTENTE VIRTUAL (SHADOW BOT) ===
+function initShadowBot() {
+    const botToggle = document.getElementById('aiBotToggle');
+    const botPanel = document.getElementById('aiBotPanel');
+    const botClose = document.getElementById('aiBotClose');
+    const sendBtn = document.getElementById('aiBotSendBtn');
+    const micBtn = document.getElementById('aiBotMicBtn');
+    const textInput = document.getElementById('aiBotTextInput');
+    const chatWindow = document.getElementById('aiBotChat');
+
+    if (!botToggle || !botPanel) return;
+
+    let isRecording = false;
+    let recognition = null;
+
+    // Soporte para micrófono
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.lang = 'es-EC';
+        recognition.interimResults = false;
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            textInput.value = transcript;
+            handleUserMessage();
+        };
+        recognition.onerror = () => stopRecording();
+        recognition.onend = () => stopRecording();
+    } else {
+        if (micBtn) micBtn.style.display = 'none';
+    }
+
+    botToggle.onclick = () => botPanel.classList.add('open');
+    botClose.onclick = () => { botPanel.classList.remove('open'); window.speechSynthesis.cancel(); };
+    sendBtn.onclick = handleUserMessage;
+    textInput.onkeypress = (e) => { if (e.key === 'Enter') handleUserMessage(); };
+
+    micBtn.onclick = () => {
+        if (!recognition) return;
+        if (isRecording) { stopRecording(); }
+        else {
+            isRecording = true;
+            micBtn.classList.add('recording');
+            recognition.start();
+        }
+    };
+
+    function stopRecording() {
+        if (recognition) recognition.stop();
+        isRecording = false;
+        micBtn.classList.remove('recording');
+    }
+
+    function addMessage(text, sender) {
+        const div = document.createElement('div');
+        div.className = sender === 'bot' ? 'bot-msg' : 'user-msg';
+        div.textContent = text;
+        chatWindow.appendChild(div);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    function handleUserMessage() {
+        const msg = textInput.value.trim();
+        if (!msg) return;
+
+        addMessage(msg, 'user');
+        textInput.value = '';
+
+        setTimeout(() => {
+            const response = generateIntelligentResponse(msg);
+            addMessage(response, 'bot');
+            speakText(response);
+        }, 500);
+    }
+
+    function generateIntelligentResponse(rawQuery) {
+        const c = window.currentSiteContent || fallbackContent;
+        const q = rawQuery.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+        if (/\b(hola|buenos dias|buenas tardes|buenas noches|saludos|que tal)\b/.test(q)) {
+            return `¡Hola! Bienvenido al asistente virtual de ${c.brand.name}. ¿En qué área legal puedo ayudarte hoy?`;
+        }
+
+        if (/\b(hora|horario|atienden|abierto|abiertos|cierran|fines de semana|sabados)\b/.test(q)) {
+            return `Nuestro horario de atención oficial es: ${c.contact.officeHours}. ¿Deseas agendar una cita?`;
+        }
+
+        if (/\b(donde|direccion|ubicacion|ubicados|llegar|oficina|estudio|babahoyo|montalvo)\b/.test(q)) {
+            return `Nuestra oficina principal se encuentra en: ${c.contact.address}. Además, brindamos cobertura experta en ${(c.contact.coverageCities || []).join(', ')}.`;
+        }
+
+        if (/\b(telefono|numero|llamar|contacto|contactar|whatsapp|correo|email)\b/.test(q)) {
+            return `Será un gusto atenderte directamente. Puedes llamarnos o escribirnos por WhatsApp al ${c.contact.whatsApp}. Nuestro correo oficial es ${c.contact.email}.`;
+        }
+
+        if (/\b(abogado|abogada|quienes|equipo|experiencia|perfil|zoila|julio|manzano|segura)\b/.test(q)) {
+            const teamNames = (c.team || []).map(t => `${t.name} (${t.role})`).join(' y ');
+            return `Nuestro equipo de expertos está liderado por ${teamNames}. Combinamos sólida experiencia judicial y estrategia legal moderna para tu defensa.`;
+        }
+
+        if (/\b(cita|agendar|reunion|consulta|consultar|precio|costo|pagar|honorarios|cuanto cobran)\b/.test(q)) {
+            return `Para consultas específicas, evaluación de tu caso y honorarios, te sugiero hablar directamente con nuestros abogados. Haz clic en el botón de WhatsApp de esta página para asistencia inmediata.`;
+        }
+
+        const matchedService = (c.services || []).find(s => {
+            const keywords = s.title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().split(' ');
+            return keywords.some(kw => q.includes(kw) && kw.length > 3);
+        });
+
+        if (matchedService) {
+            return `Sobre ${matchedService.title}: ${matchedService.description} Atendemos estos casos en ${matchedService.coverage}. Para darte una solución rápida, escríbenos por WhatsApp.`;
+        }
+
+        if (/\b(servicio|hacen|casos|ayudar|trabajan|especialidad|derecho|civil|penal|familia|laboral|transito|tierras|divorcio|alimentos)\b/.test(q)) {
+            const servicesList = (c.services || []).map(s => s.title).join(', ');
+            return `Nos especializamos en diversas ramas del derecho, incluyendo: ${servicesList}. Cuéntame brevemente tu caso o escríbenos al WhatsApp para ayudarte ahora mismo.`;
+        }
+
+        return `Comprendo. Cada caso legal es único y requiere un análisis cuidadoso. Para darte la estrategia correcta, por favor envíanos un mensaje por WhatsApp al ${c.contact.whatsApp} o visítanos en nuestras oficinas.`;
+    }
+
+    function speakText(text) {
+        if (!('speechSynthesis' in window)) return;
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'es-EC';
+        utterance.rate = 1.05;
+        window.speechSynthesis.speak(utterance);
+    }
+}
+
+// === OCULTAR BOTONES FLOTANTES AL LLEGAR AL FOOTER ===
+function bindFooterObserver() {
+    if (typeof IntersectionObserver === 'undefined') return;
+    const footer = document.querySelector('.footer');
+    const botBtn = document.getElementById('aiBotToggle');
+    const waBtn = document.getElementById('floatWhatsapp');
+    const botPanel = document.getElementById('aiBotPanel');
+
+    if (!footer) return;
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // Se ve el footer -> Ocultar botones flotantes
+                if (botBtn) botBtn.classList.add('hide-footer');
+                if (waBtn) waBtn.classList.add('hide-footer');
+                if (botPanel) botPanel.classList.remove('open');
+            } else {
+                // No se ve el footer -> Mostrar botones de nuevo
+                if (botBtn) botBtn.classList.remove('hide-footer');
+                if (waBtn) waBtn.classList.remove('hide-footer');
+            }
+        });
+    }, { threshold: 0.05 });
+
+    observer.observe(footer);
+}
 
 // === EVENTOS COMUNES ===
 function bindMenu() {
