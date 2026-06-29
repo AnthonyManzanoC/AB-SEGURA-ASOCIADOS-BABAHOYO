@@ -57,5 +57,6 @@ app.UseCors("AllowFrontend");
 app.UseAuthorization();
 app.MapControllers();
 app.MapFallbackToFile("index.html");
+app.MapGet("/api/ping", () => Results.Ok(new { status = "Despierto", firma = "Segura & Manzano" }));
 
 app.Run();
